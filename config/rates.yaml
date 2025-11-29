@@ -1,0 +1,22 @@
+# Default cost rates (USD)
+# Last updated: 2025-11-29
+#
+# Source: Derived from AWS EC2 on-demand pricing (us-east-1 region)
+# Reference instance: m5.large (2 vCPU, 8 GB RAM) at ~$0.096/hour
+#   CPU cost: $0.096 / 2 cores = $0.048 per core/hour
+#   Memory cost: $0.096 / 8 GB = $0.012 per GB/hour
+#   Blended rate adjusted for typical request/limit patterns
+#
+# These are estimates for general-purpose workloads.
+# Users should adjust to match their actual infrastructure costs:
+#   - Cloud: Use your cloud provider's compute pricing
+#   - On-prem: Calculate based on hardware amortization + overhead
+#   - Reserved instances: Apply your discount rate
+#
+# Pricing sources:
+#   - AWS: https://aws.amazon.com/ec2/pricing/on-demand/
+#   - GCP: https://cloud.google.com/compute/vm-instance-pricing
+#   - Azure: https://azure.microsoft.com/en-us/pricing/details/virtual-machines/
+
+cpu_per_core_per_hour: 0.034    # $0.034 per vCPU hour
+memory_per_gb_per_hour: 0.004   # $0.004 per GB hour

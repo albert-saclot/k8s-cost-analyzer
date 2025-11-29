@@ -22,21 +22,66 @@ go install github.com/albert-saclot/k8s-cost-analyzer@latest
 
 ## Usage
 
-List all namespaces in your cluster:
+### List namespaces
 
 ```bash
 kcost namespaces
 ```
 
+### Analyze namespace costs
+
+```bash
+kcost analyze -n kube-system
+```
+
 Example output:
 ```
-Found 4 namespaces:
+Analyzing 7 pods in namespace 'kube-system':
 
-  default (Status: Active)
-  kube-node-lease (Status: Active)
-  kube-public (Status: Active)
-  kube-system (Status: Active)
+POD                                HOURLY    DAILY   MONTHLY
+kube-apiserver-minikube            $0.0085   $0.20   $6.21
+kube-controller-manager-minikube   $0.0068   $0.16   $4.96
+etcd-minikube                      $0.0038   $0.09   $2.77
+
+Namespace Summary:
+  Total Pods: 5
+  Estimated Monthly Cost: $19.10
+
+Note: These are estimates based on resource requests, not actual usage.
 ```
+
+### Custom pricing rates
+
+```bash
+kcost analyze -n production --cpu-rate 0.05 --memory-rate 0.006
+```
+
+### View resources without costs
+
+```bash
+kcost analyze -n kube-system --costs=false
+```
+
+### Updating pricing rates
+
+The tool uses default rates from `config/rates.yaml` based on AWS m5.large pricing. These rates are date-stamped and should be reviewed periodically.
+
+**Check current rates:**
+```bash
+cat config/rates.yaml
+```
+
+**Update rates manually:**
+1. Edit `config/rates.yaml`
+2. Update `cpu_per_core_per_hour` and `memory_per_gb_per_hour` values
+3. Update the `Last updated:` date
+
+**Or use the update helper:**
+```bash
+./scripts/update-rates.sh  # Shows pricing sources and calculation guide
+```
+
+The tool warns when default rates are more than 6 months old. Override with `--cpu-rate` and `--memory-rate` flags to suppress warnings.
 
 The tool connects to your Kubernetes cluster using `~/.kube/config`.
 
@@ -94,22 +139,31 @@ go build -o kcost
 
 ```
 k8s-cost-analyzer/
-├── main.go              # Entry point
-├── cmd/                 # Cobra commands
-│   ├── root.go         # Root command
-│   └── namespaces.go   # Namespace listing
-└── internal/
-    └── k8s/
-        └── client.go   # K8s client wrapper
+├── main.go                  # Entry point
+├── cmd/                     # Cobra commands
+│   ├── root.go             # Root command
+│   ├── namespaces.go       # Namespace listing
+│   └── analyze.go          # Cost analysis
+├── internal/
+│   ├── k8s/                # Kubernetes client
+│   ├── calculator/         # Cost calculation
+│   ├── analyzer/           # Cost aggregation
+│   └── reporter/           # Output formatting
+├── config/
+│   └── rates.yaml          # Default pricing rates
+└── scripts/
+    └── update-rates.sh     # Pricing update helper
 ```
 
 ## Roadmap
 
 - [x] Basic CLI structure and K8s connection
-- [ ] Fetch and display pod resource requests/limits
-- [ ] Cost calculation engine with configurable rates
-- [ ] Multiple output formats (JSON, CSV, table)
-- [ ] Resource usage analysis
+- [x] Fetch and display pod resource requests/limits
+- [x] Cost calculation engine with configurable rates
+- [ ] Multiple output formats (JSON, CSV)
+- [ ] Testing and documentation
+- [ ] Multi-namespace analysis
+- [ ] Resource usage analysis (via metrics-server)
 - [ ] Cost optimization recommendations
 
 ## License

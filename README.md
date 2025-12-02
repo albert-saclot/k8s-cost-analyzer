@@ -62,6 +62,55 @@ kcost analyze -n production --cpu-rate 0.05 --memory-rate 0.006
 kcost analyze -n kube-system --costs=false
 ```
 
+### Output formats
+
+The tool supports multiple output formats for integration with other tools and workflows.
+
+**JSON output:**
+```bash
+kcost analyze -n kube-system -o json
+```
+
+Example output:
+```json
+{
+  "namespace": "kube-system",
+  "pods": [
+    {
+      "name": "kube-apiserver-minikube",
+      "hourly": {
+        "cpu_cost": 0.0068,
+        "memory_cost": 0.0017,
+        "total_cost": 0.0085
+      },
+      "daily": {
+        "cpu_cost": 0.16,
+        "memory_cost": 0.04,
+        "total_cost": 0.20
+      },
+      "monthly": {
+        "cpu_cost": 4.96,
+        "memory_cost": 1.25,
+        "total_cost": 6.21
+      }
+    }
+  ],
+  "summary": {
+    "total_pods": 5,
+    "hourly_cost": 0.026,
+    "daily_cost": 0.63,
+    "monthly_cost": 19.10
+  }
+}
+```
+
+**CSV output:**
+```bash
+kcost analyze -n kube-system -o csv > costs.csv
+```
+
+Outputs a CSV file with columns: `pod_name`, hourly/daily/monthly costs for CPU, memory, and total.
+
 ### Updating pricing rates
 
 The tool uses default rates from `config/rates.yaml` based on AWS m5.large pricing. These rates are date-stamped and should be reviewed periodically.
@@ -160,7 +209,7 @@ k8s-cost-analyzer/
 - [x] Basic CLI structure and K8s connection
 - [x] Fetch and display pod resource requests/limits
 - [x] Cost calculation engine with configurable rates
-- [ ] Multiple output formats (JSON, CSV)
+- [x] Multiple output formats (JSON, CSV)
 - [ ] Testing and documentation
 - [ ] Multi-namespace analysis
 - [ ] Resource usage analysis (via metrics-server)

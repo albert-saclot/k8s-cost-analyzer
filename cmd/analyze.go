@@ -21,10 +21,11 @@ var analyzeCmd = &cobra.Command{
 }
 
 var (
-	namespace  string
-	cpuRate    float64
-	memoryRate float64
-	showCosts  bool
+	namespace    string
+	cpuRate      float64
+	memoryRate   float64
+	showCosts    bool
+	outputFormat string
 )
 
 func init() {
@@ -33,6 +34,7 @@ func init() {
 	analyzeCmd.Flags().Float64Var(&cpuRate, "cpu-rate", 0.034, "Cost per CPU core per hour (USD)")
 	analyzeCmd.Flags().Float64Var(&memoryRate, "memory-rate", 0.004, "Cost per GB memory per hour (USD)")
 	analyzeCmd.Flags().BoolVar(&showCosts, "costs", true, "Show cost estimates")
+	analyzeCmd.Flags().StringVarP(&outputFormat, "output", "o", "table", "Output format: table, json, csv")
 }
 
 func runAnalyze(cmd *cobra.Command, args []string) error {
@@ -94,14 +96,28 @@ func runAnalyze(cmd *cobra.Command, args []string) error {
 	// Sort by cost (highest first)
 	sortedCosts := analyzer.SortByMonthlyCost(podCosts)
 
-	reporter.PrintCostTable(sortedCosts)
+	// Output based on format
+	switch outputFormat {
+	case "json":
+		if err := reporter.PrintCostJSON(namespace, sortedCosts); err != nil {
+			return fmt.Errorf("failed to output JSON: %w", err)
+		}
+	case "csv":
+		if err := reporter.PrintCostCSV(sortedCosts); err != nil {
+			return fmt.Errorf("failed to output CSV: %w", err)
+		}
+	case "table":
+		reporter.PrintCostTable(sortedCosts)
 
-	// Show summary
-	summary := analyzer.AggregateByNamespace(podCosts)
-	fmt.Printf("\nNamespace Summary:\n")
-	fmt.Printf("  Total Pods: %d\n", summary.TotalPods)
-	fmt.Printf("  Estimated Monthly Cost: $%.2f\n", summary.MonthlyCost)
-	fmt.Printf("\nNote: These are estimates based on resource requests, not actual usage.\n")
+		// Show summary for table format
+		summary := analyzer.AggregateByNamespace(podCosts)
+		fmt.Printf("\nNamespace Summary:\n")
+		fmt.Printf("  Total Pods: %d\n", summary.TotalPods)
+		fmt.Printf("  Estimated Monthly Cost: $%.2f\n", summary.MonthlyCost)
+		fmt.Printf("\nNote: These are estimates based on resource requests, not actual usage.\n")
+	default:
+		return fmt.Errorf("unsupported output format: %s (supported: table, json, csv)", outputFormat)
+	}
 
 	return nil
 }

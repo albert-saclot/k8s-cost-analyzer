@@ -182,7 +182,22 @@ minikube start
 
 ```bash
 go build -o kcost
+# Or use make
+make build
 ```
+
+### Running tests
+
+```bash
+go test ./...
+# Or use make
+make test
+```
+
+The project includes unit tests for:
+- Cost calculation logic (millicores to cores, bytes to GB conversions)
+- Namespace aggregation and sorting
+- JSON and CSV output formatting
 
 ### Project Structure
 
@@ -210,7 +225,7 @@ k8s-cost-analyzer/
 - [x] Fetch and display pod resource requests/limits
 - [x] Cost calculation engine with configurable rates
 - [x] Multiple output formats (JSON, CSV)
-- [ ] Testing and documentation
+- [x] Testing and documentation
 - [ ] Multi-namespace analysis
 - [ ] Resource usage analysis (via metrics-server)
 - [ ] Cost optimization recommendations
